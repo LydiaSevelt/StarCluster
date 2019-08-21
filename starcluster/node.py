@@ -712,7 +712,11 @@ class Node(object):
 
     def start_nfs_server(self):
         log.info("Starting NFS server on %s" % self.alias)
-        self.ssh.execute('/etc/init.d/portmap start', ignore_exit_status=True)
+        # not the best test for a systemd system, but eh, it'll do for now
+        if posixpath.exists('/usr/bin/systemctl'):
+            self.ssh.execute('systemctl start portmap', ignore_exit_status=True)
+        else:
+            self.ssh.execute('/etc/init.d/portmap start', ignore_exit_status=True)
         self.ssh.execute('mount -t rpc_pipefs sunrpc /var/lib/nfs/rpc_pipefs/',
                          ignore_exit_status=True)
         EXPORTSD = '/etc/exports.d'
@@ -726,7 +730,11 @@ class Node(object):
         self.ssh.execute("mkdir -p %s" % DUMMY_EXPORT_DIR)
         with self.ssh.remote_file(DUMMY_EXPORT_FILE, 'w') as dummyf:
             dummyf.write(DUMMY_EXPORT_LINE)
-        self.ssh.execute('/etc/init.d/nfs start')
+        # not the best test for a systemd system, but eh, it'll do for now
+        if posixpath.exists('/usr/bin/systemctl'):
+            self.ssh.execute('systemctl start nfs-server')
+        else:
+            self.ssh.execute('/etc/init.d/nfs start')
         self.ssh.execute('rm -f %s' % DUMMY_EXPORT_FILE)
         self.ssh.execute('rm -rf %s' % DUMMY_EXPORT_DIR)
         self.ssh.execute('exportfs -fra')
