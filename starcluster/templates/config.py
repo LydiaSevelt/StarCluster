@@ -34,6 +34,9 @@ DEFAULT_TEMPLATE=smallcluster
 #WEB_BROWSER=chromium
 # split the config into multiple files
 #INCLUDE=~/.starcluster/aws, ~/.starcluster/keys, ~/.starcluster/vols
+# quiet output - set this to surpress a lot of extranious ouput
+#QUIET_OUTPUT=True
+
 
 #############################################
 ## AWS Credentials and Connection Settings ##

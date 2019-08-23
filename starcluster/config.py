@@ -573,7 +573,7 @@ class StarClusterConfig(object):
             self.aws = self._load_section('aws info', self.aws_settings)
         except exception.ConfigSectionMissing:
             log.warn("No [aws info] section found in the config!")
-        self.aws.update(self.get_settings_from_env(self.aws_settings))
+        self.aws.update(self.get_settings_from_env(self.aws_settings, self.gloabls.quiet_output))
         self.keys = self._load_sections('key', self.key_settings)
         self.vols = self._load_sections('volume', self.volume_settings)
         self.vols.update(self._load_sections('vol', self.volume_settings))
@@ -585,7 +585,7 @@ class StarClusterConfig(object):
         self.clusters = self._load_cluster_sections(sections)
         return self
 
-    def get_settings_from_env(self, settings):
+    def get_settings_from_env(self, settings, quiet_output=False):
         """
         Returns AWS credentials defined in the user's shell
         environment.
@@ -593,10 +593,12 @@ class StarClusterConfig(object):
         found = {}
         for key in settings:
             if key.upper() in os.environ:
-                log.warn("Setting '%s' from environment..." % key.upper())
+                if not quiet_output:
+                    log.warn("Setting '%s' from environment..." % key.upper())
                 found[key] = os.environ.get(key.upper())
             elif key in os.environ:
-                log.warn("Setting '%s' from environment..." % key)
+                if not quiet_output:
+                    log.warn("Setting '%s' from environment..." % key)
                 found[key] = os.environ.get(key)
         return found
 

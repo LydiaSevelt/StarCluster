@@ -286,6 +286,7 @@ GLOBAL_SETTINGS = {
     'refresh_interval': (int, False, 30, None, None),
     'web_browser': (str, False, None, None, None),
     'include': (list, False, [], None, None),
+    'quiet_output': (bool, False, False, None, None),
 }
 
 AWS_SETTINGS = {
