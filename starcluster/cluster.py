@@ -272,13 +272,13 @@ class ClusterManager(managers.Manager):
             raise ValueError("Invalid cluster group name: %s" % sg)
         return tag
 
-    def list_clusters(self, cluster_groups=None, show_ssh_status=False):
+    def list_clusters(self, cluster_groups=None, show_ssh_status=False, quiet_output=False):
         """
         Prints a summary for each active cluster on EC2
         """
         if not cluster_groups:
             cluster_groups = self.get_cluster_security_groups()
-            if not cluster_groups:
+            if not cluster_groups and not quiet_output:
                 log.info("No clusters found...")
         else:
             try:
@@ -298,9 +298,10 @@ class ClusterManager(managers.Manager):
                 print
                 continue
             header = '%s (security group: %s)' % (tag, scg.name)
-            print '-' * len(header)
-            print header
-            print '-' * len(header)
+            if not quiet_output:
+                print '-' * len(header)
+                print header
+                print '-' * len(header)
             nodes = cl.nodes
             try:
                 n = nodes[0]
@@ -314,11 +315,12 @@ class ClusterManager(managers.Manager):
                 uptime = getattr(n, 'uptime', 'N/A')
             print 'Launch time: %s' % ltime
             print 'Uptime: %s' % uptime
-            if scg.vpc_id:
+            if scg.vpc_id and not quiet_output:
                 print 'VPC: %s' % scg.vpc_id
                 print 'Subnet: %s' % getattr(n, 'subnet_id', 'N/A')
-            print 'Zone: %s' % getattr(n, 'placement', 'N/A')
-            print 'Keypair: %s' % getattr(n, 'key_name', 'N/A')
+            if not quiet_output:
+                print 'Zone: %s' % getattr(n, 'placement', 'N/A')
+                print 'Keypair: %s' % getattr(n, 'key_name', 'N/A')
             ebs_vols = []
             for node in nodes:
                 devices = node.attached_vols
@@ -331,12 +333,17 @@ class ClusterManager(managers.Manager):
                     status = d.status
                     ebs_vols.append((vol_id, node_id, dev, status))
             if ebs_vols:
-                print 'EBS volumes:'
+                if not quiet_output:
+                    print 'EBS volumes:'
                 for vid, nid, dev, status in ebs_vols:
-                    print('    %s on %s:%s (status: %s)' %
-                          (vid, nid, dev, status))
+                    if quiet_output:
+                        print('EBS volume: %s' % (vid,))
+                    else:
+                        print('    %s on %s:%s (status: %s)' %
+                              (vid, nid, dev, status))
             else:
-                print 'EBS volumes: N/A'
+                if not quiet_output:
+                    print 'EBS volumes: N/A'
             spot_reqs = cl.spot_requests
             if spot_reqs:
                 active = len([s for s in spot_reqs if s.state == 'active'])
@@ -350,7 +357,8 @@ class ClusterManager(managers.Manager):
                     msg += '%d open' % opn
                 print 'Spot requests: %s' % msg
             if nodes:
-                print 'Cluster nodes:'
+                if not quiet_output:
+                    print 'Cluster nodes:'
                 for node in nodes:
                     nodeline = "    %7s %s %s %s" % (node.alias, node.state,
                                                      node.id, node.addr or '')
@@ -359,7 +367,8 @@ class ClusterManager(managers.Manager):
                     if show_ssh_status:
                         ssh_status = {True: 'Up', False: 'Down'}
                         nodeline += ' (SSH: %s)' % ssh_status[node.is_up()]
-                    print nodeline
+                    if not quiet_output:
+                        print nodeline
                 print 'Total nodes: %d' % len(nodes)
             else:
                 print 'Cluster nodes: N/A'
