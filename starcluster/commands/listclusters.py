@@ -31,11 +31,10 @@ class CmdListClusters(ClusterCompleter):
                           action="store_true", default=False,
                           help="output whether SSH is up on each node or not")
 
-    def addopts(self, parser):
         parser.add_option("-q", "--quite", dest="quiet_output",
                           action="store_true", default=False,
                           help="quiet output for easier parsing")
 
     def execute(self, args):
         self.cm.list_clusters(cluster_groups=args,
-                              show_ssh_status=self.opts.show_ssh_status)
+                              show_ssh_status=self.opts.show_ssh_status, quiet_output=self.opts.quiet_output)
