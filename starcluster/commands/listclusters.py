@@ -31,7 +31,7 @@ class CmdListClusters(ClusterCompleter):
                           action="store_true", default=False,
                           help="output whether SSH is up on each node or not")
 
-        parser.add_option("-q", "--quite", dest="quiet_output",
+        parser.add_option("-q", "--quiet", dest="quiet_output",
                           action="store_true", default=False,
                           help="quiet output for easier parsing")
 
