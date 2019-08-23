@@ -573,7 +573,7 @@ class StarClusterConfig(object):
             self.aws = self._load_section('aws info', self.aws_settings)
         except exception.ConfigSectionMissing:
             log.warn("No [aws info] section found in the config!")
-        self.aws.update(self.get_settings_from_env(self.aws_settings, self.gloabls.quiet_output))
+        self.aws.update(self.get_settings_from_env(self.aws_settings, self.globals.quiet_output))
         self.keys = self._load_sections('key', self.key_settings)
         self.vols = self._load_sections('volume', self.volume_settings)
         self.vols.update(self._load_sections('vol', self.volume_settings))

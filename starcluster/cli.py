@@ -261,10 +261,11 @@ class StarClusterCLI(object):
         """
         # Handle Bash/ZSH completion if necessary
         self.handle_completion()
-        # Show StarCluster header
-        self.print_header()
         # Parse subcommand options and args
         gopts, sc, opts, args = self.parse_subcommands()
+        # Show StarCluster header if not quiet_output
+        if not gopts.CONFIG.globals.quiet_output:
+            self.print_header()
         if args and args[0] == 'help':
             # make 'help' subcommand act like --help option
             sc.parser.print_help()
