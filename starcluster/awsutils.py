@@ -112,7 +112,7 @@ class EasyEC2(EasyAWS):
                     path=aws_ec2_path, proxy=aws_proxy,
                     proxy_port=aws_proxy_port, proxy_user=aws_proxy_user,
                     proxy_pass=aws_proxy_pass,
-                    validate_certs=aws_validate_certsi,
+                    validate_certs=aws_validate_certs,
                     security_token=aws_security_token)
         super(EasyEC2, self).__init__(aws_access_key_id, aws_secret_access_key,
                                       boto.connect_vpc, **kwds)
