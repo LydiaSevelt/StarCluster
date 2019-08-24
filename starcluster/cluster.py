@@ -313,8 +313,12 @@ class ClusterManager(managers.Manager):
             if state in ['pending', 'running']:
                 ltime = getattr(n, 'local_launch_time', 'N/A')
                 uptime = getattr(n, 'uptime', 'N/A')
-            print '%s: Launch time: %s' % (tag, ltime)
-            print '%s: Uptime: %s' % (tag, uptime)
+            if quiet_output:
+                print '%s;Launch time;%s' % (tag, ltime)
+                print '%s;Uptime;%s' % (tag, uptime)
+            else:
+                print 'Launch time: %s' % ltime
+                print 'Uptime: %s' % uptime
             if scg.vpc_id and not quiet_output:
                 print 'VPC: %s' % scg.vpc_id
                 print 'Subnet: %s' % getattr(n, 'subnet_id', 'N/A')
@@ -337,7 +341,7 @@ class ClusterManager(managers.Manager):
                     print 'EBS volumes:'
                 for vid, nid, dev, status in ebs_vols:
                     if quiet_output:
-                        print('%s: EBS volume: %s' % (tag, vid))
+                        print('%s;EBS volume;%s' % (tag, vid))
                     else:
                         print('    %s on %s:%s (status: %s)' %
                               (vid, nid, dev, status))
@@ -370,7 +374,10 @@ class ClusterManager(managers.Manager):
                         nodeline += ' (SSH: %s)' % ssh_status[node.is_up()]
                     if not quiet_output:
                         print nodeline
-                print('%s: Total nodes: %d' % (tag, len(nodes)))
+                if quiet_output:
+                    print('%s;Total nodes;%d' % (tag, len(nodes)))
+                else:
+                    print('Total nodes: %d' % len(nodes))
             else:
                 print 'Cluster nodes: N/A'
             print
