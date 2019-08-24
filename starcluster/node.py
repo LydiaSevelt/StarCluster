@@ -740,7 +740,8 @@ class Node(object):
         server_node - remote server node that is sharing the remote_paths
         remote_paths - list of remote paths to mount from server_node
         """
-        self.ssh.execute('/etc/init.d/portmap start')
+        # not the best test for a systemd system, but eh, it'll do for now
+        self.ssh.execute('if [ -f /usr/bin/systemctl ]; then systemctl start portmap; else /etc/init.d/portmap start; fi')
         # TODO: move this fix for xterm somewhere else
         self.ssh.execute('mount -t devpts none /dev/pts',
                          ignore_exit_status=True)
