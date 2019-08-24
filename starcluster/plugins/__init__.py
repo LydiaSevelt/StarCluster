@@ -29,4 +29,5 @@ __all__ = [
     'elasticip',
     'xvfb',
     'mpich2',
+    'monit',
 ]
