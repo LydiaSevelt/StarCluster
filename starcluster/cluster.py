@@ -272,14 +272,18 @@ class ClusterManager(managers.Manager):
             raise ValueError("Invalid cluster group name: %s" % sg)
         return tag
 
-    def list_clusters(self, cluster_groups=None, show_ssh_status=False, quiet_output=False):
+    def list_clusters(self, cluster_groups=None, show_ssh_status=False, php_output=False, quiet_output=False):
         """
         Prints a summary for each active cluster on EC2
         """
+        if php_output:
+            quiet_output = True
+            print("<?php $clusters = array(")
         if not cluster_groups:
             cluster_groups = self.get_cluster_security_groups()
             if not cluster_groups and not quiet_output:
-                log.info("No clusters found...")
+                if not php_output:
+                    log.info("No clusters found...")
         else:
             try:
                 cluster_groups = [self.get_cluster_security_group(g) for g
@@ -288,6 +292,8 @@ class ClusterManager(managers.Manager):
                 raise exception.ClusterDoesNotExist(g)
         for scg in cluster_groups:
             tag = self.get_tag_from_sg(scg.name)
+            if php_output:
+                print("array(\"" + tag + "\","),
             try:
                 cl = self.get_cluster(tag, group=scg, load_plugins=False,
                                       load_volumes=False, require_keys=False)
@@ -295,7 +301,8 @@ class ClusterManager(managers.Manager):
                 sep = '*' * 60
                 log.error('\n'.join([sep, e.msg, sep]),
                           extra=dict(__textwrap__=True))
-                print
+                if not php_output:
+                    print
                 continue
             header = '%s (security group: %s)' % (tag, scg.name)
             if not quiet_output:
@@ -314,8 +321,11 @@ class ClusterManager(managers.Manager):
                 ltime = getattr(n, 'local_launch_time', 'N/A')
                 uptime = getattr(n, 'uptime', 'N/A')
             if quiet_output:
-                print '%s;Launch time;%s' % (tag, ltime)
-                print '%s;Uptime;%s' % (tag, uptime)
+                if php_output:
+                    print("\"" + ltime + "\",\"" + uptime + "\","),
+                else:
+                    print '%s;Launch time;%s' % (tag, ltime)
+                    print '%s;Uptime;%s' % (tag, uptime)
             else:
                 print 'Launch time: %s' % ltime
                 print 'Uptime: %s' % uptime
@@ -339,15 +349,24 @@ class ClusterManager(managers.Manager):
             if ebs_vols:
                 if not quiet_output:
                     print 'EBS volumes:'
+                if php_output:
+                    print("array("),
                 for vid, nid, dev, status in ebs_vols:
                     if quiet_output:
-                        print('%s;EBS volume;%s' % (tag, vid))
+                        if php_output:
+                            print("\"" + vid + "\","),
+                        else:
+                            print('%s;EBS volume;%s' % (tag, vid))
                     else:
                         print('    %s on %s:%s (status: %s)' %
                               (vid, nid, dev, status))
+                if php_output:
+                    print("),"),
             else:
                 if not quiet_output:
                     print 'EBS volumes: N/A'
+                if php_output:
+                    print("array(),"),
             spot_reqs = cl.spot_requests
             if spot_reqs:
                 active = len([s for s in spot_reqs if s.state == 'active'])
@@ -367,6 +386,8 @@ class ClusterManager(managers.Manager):
                 for node in nodes:
                     nodeline = "    %7s %s %s %s" % (node.alias, node.state,
                                                      node.id, node.addr or '')
+                    if node.alias == "master":
+                        master_ip = node.addr
                     if node.spot_id:
                         nodeline += ' (spot %s)' % node.spot_id
                     if show_ssh_status:
@@ -375,12 +396,21 @@ class ClusterManager(managers.Manager):
                     if not quiet_output:
                         print nodeline
                 if quiet_output:
-                    print('%s;Total nodes;%d' % (tag, len(nodes)))
+                    if php_output:
+                        print("\"" + str(len(nodes)) + "\",\"" + master_ip + "\"),")
+                    else:
+                        print('%s;Total nodes;%d' % (tag, len(nodes)))
                 else:
                     print('Total nodes: %d' % len(nodes))
             else:
-                print 'Cluster nodes: N/A'
-            print
+                if php_output:
+                    print "\"0\",\"\"),"
+                else:
+                    print 'Cluster nodes: N/A'
+            if not php_output:
+                print
+        if php_output:
+            print "); ?>"
 
     def run_plugin(self, plugin_name, cluster_tag):
         """

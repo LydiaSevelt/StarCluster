@@ -30,11 +30,13 @@ class CmdListClusters(ClusterCompleter):
         parser.add_option("-s", "--show-ssh-status", dest="show_ssh_status",
                           action="store_true", default=False,
                           help="output whether SSH is up on each node or not")
-
+        parser.add_option("-p", "--php", dest="php_output",
+                          action="store_true", default=False,
+                          help="output cluster list in a php array format suitable for including")
         parser.add_option("-q", "--quiet", dest="quiet_output",
                           action="store_true", default=False,
                           help="quiet output for easier parsing")
 
     def execute(self, args):
         self.cm.list_clusters(cluster_groups=args,
-                              show_ssh_status=self.opts.show_ssh_status, quiet_output=self.opts.quiet_output)
+                              show_ssh_status=self.opts.show_ssh_status, php_output=self.opts.php_output, quiet_output=self.opts.quiet_output)
